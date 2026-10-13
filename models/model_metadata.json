@@ -1,0 +1,25 @@
+{
+    "model_architecture": "Custom 3-Block CNN (Conv2D -> MaxPool2D -> Dropout -> Dense)",
+    "input_shape": [
+        128,
+        128,
+        3
+    ],
+    "target_classes": [
+        "Cardboard",
+        "Glass",
+        "Metal",
+        "Organic Waste",
+        "Paper",
+        "Plastic"
+    ],
+    "epochs_trained": 15,
+    "batch_size": 32,
+    "train_samples": 504,
+    "validation_samples": 108,
+    "test_samples": 108,
+    "final_train_accuracy": 1.0,
+    "final_val_accuracy": 1.0,
+    "final_train_loss": 0.014212002046406269,
+    "final_val_loss": 0.00047210927004925907
+}

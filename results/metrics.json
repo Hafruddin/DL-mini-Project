@@ -1,0 +1,107 @@
+{
+    "evaluation_timestamp": "2026-10-10T12:14:54.471886",
+    "test_dataset_size": 108,
+    "overall_test_accuracy": 1.0,
+    "macro_precision": 1.0,
+    "macro_recall": 1.0,
+    "macro_f1_score": 1.0,
+    "weighted_precision": 1.0,
+    "weighted_recall": 1.0,
+    "weighted_f1_score": 1.0,
+    "class_metrics": {
+        "Cardboard": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1_score": 1.0,
+            "support": 18
+        },
+        "Glass": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1_score": 1.0,
+            "support": 18
+        },
+        "Metal": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1_score": 1.0,
+            "support": 18
+        },
+        "Organic Waste": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1_score": 1.0,
+            "support": 18
+        },
+        "Paper": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1_score": 1.0,
+            "support": 18
+        },
+        "Plastic": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1_score": 1.0,
+            "support": 18
+        }
+    },
+    "confusion_matrix": [
+        [
+            18,
+            0,
+            0,
+            0,
+            0,
+            0
+        ],
+        [
+            0,
+            18,
+            0,
+            0,
+            0,
+            0
+        ],
+        [
+            0,
+            0,
+            18,
+            0,
+            0,
+            0
+        ],
+        [
+            0,
+            0,
+            0,
+            18,
+            0,
+            0
+        ],
+        [
+            0,
+            0,
+            0,
+            0,
+            18,
+            0
+        ],
+        [
+            0,
+            0,
+            0,
+            0,
+            0,
+            18
+        ]
+    ],
+    "target_classes": [
+        "Cardboard",
+        "Glass",
+        "Metal",
+        "Organic Waste",
+        "Paper",
+        "Plastic"
+    ]
+}

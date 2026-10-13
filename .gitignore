@@ -1,0 +1,36 @@
+# Git ignore rules for Smart Waste Classification and Recycling Assistant
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment variables & secrets
+.env
+kaggle.json
+
+# Large raw datasets (raw downloads)
+dataset/raw/
+*.zip
+*.tar.gz
+
+# Streamlit logs & cache
+.streamlit/*
+!.streamlit/config.toml

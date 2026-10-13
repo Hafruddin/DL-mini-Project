@@ -1,0 +1,118 @@
+"""
+Inference and Prediction Service for Smart Waste Classification.
+Handles model loading with singleton caching, input preprocessing, class mapping,
+confidence scoring, and uncertainty detection.
+"""
+
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+
+import json
+import logging
+from pathlib import Path
+from typing import Dict, Any, Union
+import numpy as np
+from PIL import Image
+import tensorflow as tf
+from tensorflow import keras
+
+from config import (
+    MODEL_PATH,
+    CLASS_MAPPING_PATH,
+    TARGET_CLASSES,
+    CONFIDENCE_THRESHOLD
+)
+from preprocessing import (
+    validate_image_file,
+    prepare_for_inference,
+    PreprocessingError
+)
+from recommendations import get_recommendation
+
+logger = logging.getLogger(__name__)
+
+# Global cache for single-process memory reuse
+_MODEL_CACHE = None
+_CLASS_MAPPING_CACHE = None
+
+
+def get_loaded_model() -> keras.Model:
+    """Loads and caches the trained Keras model."""
+    global _MODEL_CACHE
+    if _MODEL_CACHE is None:
+        if not MODEL_PATH.exists():
+            raise FileNotFoundError(
+                f"Model file not found at '{MODEL_PATH}'. "
+                "Please run 'python train_model.py' to generate and train the model."
+            )
+        logger.info(f"Loading Keras model from {MODEL_PATH}...")
+        _MODEL_CACHE = keras.models.load_model(MODEL_PATH)
+    return _MODEL_CACHE
+
+
+def get_class_mapping() -> Dict[int, str]:
+    """Loads and caches the class mapping dictionary."""
+    global _CLASS_MAPPING_CACHE
+    if _CLASS_MAPPING_CACHE is None:
+        if CLASS_MAPPING_PATH.exists():
+            with open(CLASS_MAPPING_PATH, "r", encoding="utf-8") as f:
+                raw_map = json.load(f)
+                _CLASS_MAPPING_CACHE = {int(k): v for k, v in raw_map.items()}
+        else:
+            _CLASS_MAPPING_CACHE = {i: c for i, c in enumerate(TARGET_CLASSES)}
+    return _CLASS_MAPPING_CACHE
+
+
+def predict_waste(image_input: Union[str, Path, Image.Image, object]) -> Dict[str, Any]:
+    """
+    Executes actual CNN inference on the given input image.
+
+    Returns:
+        Dict containing:
+            - predicted_category: str
+            - confidence_score: float (0.0 to 1.0)
+            - confidence_percentage: float (0.0 to 100.0)
+            - is_uncertain: bool (if below CONFIDENCE_THRESHOLD)
+            - class_probabilities: Dict[str, float]
+            - recommendation: Dict[str, Any]
+    """
+    # 1. Validate file
+    is_valid, err_msg = validate_image_file(image_input)
+    if not is_valid:
+        raise ValueError(err_msg)
+
+    # 2. Preprocess
+    try:
+        tensor = prepare_for_inference(image_input)
+    except PreprocessingError as pe:
+        raise ValueError(f"Image preprocessing failed: {pe}") from pe
+
+    # 3. Model inference
+    model = get_loaded_model()
+    class_map = get_class_mapping()
+
+    raw_preds = model.predict(tensor, verbose=0)[0]
+    pred_idx = int(np.argmax(raw_preds))
+    confidence_score = float(raw_preds[pred_idx])
+    predicted_category = class_map.get(pred_idx, TARGET_CLASSES[pred_idx])
+
+    # Class probability dictionary
+    class_probabilities = {}
+    for idx, prob in enumerate(raw_preds):
+        cname = class_map.get(idx, TARGET_CLASSES[idx] if idx < len(TARGET_CLASSES) else f"Class_{idx}")
+        class_probabilities[cname] = round(float(prob), 4)
+
+    # Check uncertainty against configurable threshold
+    is_uncertain = confidence_score < CONFIDENCE_THRESHOLD
+
+    # 4. Fetch deterministic recommendation
+    rec = get_recommendation(predicted_category)
+
+    return {
+        "predicted_category": predicted_category,
+        "confidence_score": round(confidence_score, 4),
+        "confidence_percentage": round(confidence_score * 100.0, 2),
+        "is_uncertain": is_uncertain,
+        "class_probabilities": class_probabilities,
+        "recommendation": rec
+    }

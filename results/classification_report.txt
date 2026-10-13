@@ -1,0 +1,17 @@
+SMART WASTE CLASSIFICATION — TEST EVALUATION REPORT
+Evaluation Timestamp: 2026-10-10 12:14:54
+Total Test Samples: 108
+============================================================
+
+               precision    recall  f1-score   support
+
+    Cardboard     1.0000    1.0000    1.0000        18
+        Glass     1.0000    1.0000    1.0000        18
+        Metal     1.0000    1.0000    1.0000        18
+Organic Waste     1.0000    1.0000    1.0000        18
+        Paper     1.0000    1.0000    1.0000        18
+      Plastic     1.0000    1.0000    1.0000        18
+
+     accuracy                         1.0000       108
+    macro avg     1.0000    1.0000    1.0000       108
+ weighted avg     1.0000    1.0000    1.0000       108
