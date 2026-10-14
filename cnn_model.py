@@ -76,6 +76,8 @@ def get_data_augmentation_layer() -> keras.Sequential:
             layers.RandomRotation(0.10, name="aug_rotation"),
             layers.RandomZoom(0.10, name="aug_zoom"),
             layers.RandomTranslation(height_factor=0.08, width_factor=0.08, name="aug_translation"),
+            layers.RandomBrightness(factor=0.12, value_range=(0.0, 1.0), name="aug_brightness"),
+            layers.RandomContrast(factor=0.12, name="aug_contrast"),
         ],
         name="training_data_augmentation",
     )

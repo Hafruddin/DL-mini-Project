@@ -134,6 +134,7 @@ smart-waste-classification/
 ├── train_model.py             # Model training script with callbacks
 ├── evaluate_model.py          # Model testing & metrics calculation
 ├── predictor.py               # Cached inference service
+├── image_verifier.py          # Screenshot, blank, & non-waste detector
 ├── recommendations.py         # Disposal & recycling domain engine
 ├── preprocessing.py           # Preprocessing & image validation
 ├── pytest.ini                 # Pytest path settings
@@ -165,7 +166,9 @@ smart-waste-classification/
 ├── tests/
 │   ├── test_preprocessing.py
 │   ├── test_recommendations.py
-│   └── test_prediction.py
+│   ├── test_prediction.py
+│   ├── test_image_verifier.py
+│   └── test_regression_tuple.py
 │
 └── documentation/
     ├── report_outline.md      # Comprehensive academic report guide
@@ -179,4 +182,5 @@ smart-waste-classification/
 
 - **Ambient Lighting & Clutter**: Ambiguous backgrounds, heavy dirt, and multi-material packaging (e.g., tetra-paks, metal-lined paper) may lower prediction confidence.
 - **Confidence Calibration**: Softmax probabilities indicate relative certainty but are subject to threshold alerting (configured at $\ge 60\%$).
+- **Screenshot & Non-Waste Rejection**: Integrated digital artifact and spatial variance verification automatically intercepts computer/mobile screenshots, blank images, and non-physical graphics, returning informative guidance instead of false material classifications.
 - **Municipal Variations**: Recycling rules differ across municipal jurisdictions. General recommendations advise checking local collection rules.

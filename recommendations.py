@@ -187,6 +187,36 @@ RECOMMENDATIONS: Dict[str, Dict[str, Any]] = {
             "Wash hands thoroughly after handling decaying matter. Keep compost containers covered with tight lids "
             "to prevent vermin, fruit flies, and odors."
         )
+    },
+    "Cannot Identify Item": {
+        "display_name": "Cannot Identify Waste Item",
+        "icon": "⚠️",
+        "category_badge_color": "#DC2626",
+        "short_description": "The uploaded image could not be recognized as one of the 6 physical waste categories, or appears to be a digital screenshot/non-waste image.",
+        "examples": [
+            "Digital screenshots or desktop/mobile application UI",
+            "Blank, dark, or out-of-focus camera captures",
+            "Objects outside the 6 designated domestic waste categories",
+            "Text documents, diagrams, or digital illustrations"
+        ],
+        "preparation_instructions": [
+            "Take a clear photograph of a real physical waste object (bottle, can, box, packaging, or food scrap).",
+            "Place the item on a neutral, well-lit surface avoiding extreme reflections or deep shadows.",
+            "Center the object so it occupies the primary area of the photo.",
+            "Avoid uploading computer screenshots, browser windows, or digital graphics."
+        ],
+        "disposal_instructions": (
+            "Unable to generate disposal recommendations for unverified or non-waste items. "
+            "Please upload a clear photograph of an actual discarded physical item."
+        ),
+        "recycling_guidance": (
+            "Responsible waste segregation relies on detecting tangible material surfaces (glass, cardboard, "
+            "metal, paper, plastic, organic matter). Digital screens and non-waste objects cannot be processed."
+        ),
+        "safety_precautions": (
+            "Do not dispose of unidentified hazardous materials, batteries, chemicals, or electronics in "
+            "standard domestic waste or recycling bins."
+        )
     }
 }
 

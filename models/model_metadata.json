@@ -18,8 +18,8 @@
     "train_samples": 504,
     "validation_samples": 108,
     "test_samples": 108,
-    "final_train_accuracy": 1.0,
-    "final_val_accuracy": 1.0,
-    "final_train_loss": 0.014212002046406269,
-    "final_val_loss": 0.00047210927004925907
+    "final_train_accuracy": 0.9960317611694336,
+    "final_val_accuracy": 0.9259259104728699,
+    "final_train_loss": 0.019114291295409203,
+    "final_val_loss": 0.16714335978031158
 }

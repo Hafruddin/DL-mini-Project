@@ -131,10 +131,34 @@ def create_curated_seed_dataset(samples_per_class: int = 100) -> None:
                 draw.line([points[0], points[2]], fill=(50, 80, 20), width=2)
 
             elif class_name == "Paper":
-                # Flat paper sheet geometry with pseudo-text rows
-                draw.rectangle([15, 15, IMG_WIDTH - 15, IMG_HEIGHT - 15], fill=colors[0], outline=(170, 170, 170), width=1)
-                for line_y in range(30, IMG_HEIGHT - 25, 8):
-                    draw.line([(25, line_y), (IMG_WIDTH - 25, line_y)], fill=(120, 120, 120), width=1)
+                # Realistic crumpled and folded paper waste geometry with diagonal creases and torn contours
+                # Draw irregular polygon representing crumpled paper sheet
+                paper_poly = [
+                    (random.randint(12, 28), random.randint(12, 28)),
+                    (random.randint(IMG_WIDTH // 2 - 10, IMG_WIDTH // 2 + 15), random.randint(8, 22)),
+                    (random.randint(IMG_WIDTH - 28, IMG_WIDTH - 10), random.randint(14, 30)),
+                    (random.randint(IMG_WIDTH - 22, IMG_WIDTH - 8), random.randint(IMG_HEIGHT // 2 - 10, IMG_HEIGHT // 2 + 15)),
+                    (random.randint(IMG_WIDTH - 30, IMG_WIDTH - 12), random.randint(IMG_HEIGHT - 28, IMG_HEIGHT - 10)),
+                    (random.randint(IMG_WIDTH // 2 - 15, IMG_WIDTH // 2 + 10), random.randint(IMG_HEIGHT - 22, IMG_HEIGHT - 8)),
+                    (random.randint(10, 26), random.randint(IMG_HEIGHT - 30, IMG_HEIGHT - 12)),
+                    (random.randint(8, 22), random.randint(IMG_HEIGHT // 2 - 12, IMG_HEIGHT // 2 + 10))
+                ]
+                draw.polygon(paper_poly, fill=colors[0], outline=(180, 180, 180))
+                
+                # Dynamic crumpled diagonal fold creases
+                for _ in range(random.randint(4, 7)):
+                    p1 = (random.randint(20, IMG_WIDTH - 20), random.randint(20, IMG_HEIGHT - 20))
+                    p2 = (random.randint(20, IMG_WIDTH - 20), random.randint(20, IMG_HEIGHT - 20))
+                    draw.line([p1, p2], fill=(160, 160, 160), width=random.randint(1, 2))
+
+                # Folded corner triangle flap
+                corner_x = random.choice([20, IMG_WIDTH - 20])
+                corner_y = random.choice([20, IMG_HEIGHT - 20])
+                draw.polygon(
+                    [(corner_x, corner_y), (corner_x + random.randint(-15, 15), corner_y), (corner_x, corner_y + random.randint(-15, 15))],
+                    fill=colors[1],
+                    outline=(150, 150, 150)
+                )
 
             elif class_name == "Plastic":
                 # Plastic bottle silhouette with neck and cap
@@ -143,7 +167,11 @@ def create_curated_seed_dataset(samples_per_class: int = 100) -> None:
                 draw.rectangle([bx - 10, by - 55, bx + 10, by - 40], fill=colors[3], outline=(255, 255, 255), width=2)
                 draw.line([(bx - 15, by - 30), (bx - 15, by + 35)], fill=(240, 245, 255), width=2)
 
-            # Apply light subtle blur to simulate camera capture
+            # Apply realistic optical camera sensor noise and subtle blur
+            img_arr = np.array(img, dtype=np.float32)
+            cam_noise = np.random.normal(0, 1.8, img_arr.shape)
+            img_arr = np.clip(img_arr + cam_noise, 0, 255).astype(np.uint8)
+            img = Image.fromarray(img_arr)
             img = img.filter(ImageFilter.GaussianBlur(radius=0.5))
             img_path = class_raw / f"{class_name.lower().replace(' ', '_')}_{i:04d}.jpg"
             img.save(img_path, "JPEG", quality=92)

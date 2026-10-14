@@ -28,6 +28,7 @@ from preprocessing import (
     PreprocessingError
 )
 from recommendations import get_recommendation
+from image_verifier import verify_waste_image
 
 logger = logging.getLogger(__name__)
 
@@ -65,29 +66,57 @@ def get_class_mapping() -> Dict[int, str]:
 
 def predict_waste(image_input: Union[str, Path, Image.Image, object]) -> Dict[str, Any]:
     """
-    Executes actual CNN inference on the given input image.
+    Executes input verification, screenshot/non-waste filtering, and CNN inference.
 
     Returns:
         Dict containing:
+            - is_waste: bool (True if physical waste item, False if screenshot/blank/non-waste)
+            - is_identified: bool (True if confident waste identification, False otherwise)
             - predicted_category: str
             - confidence_score: float (0.0 to 1.0)
             - confidence_percentage: float (0.0 to 100.0)
-            - is_uncertain: bool (if below CONFIDENCE_THRESHOLD)
+            - is_uncertain: bool (if below CONFIDENCE_THRESHOLD or unverified)
+            - status: str ('success', 'screenshot_detected', 'blank_image', 'low_confidence', etc.)
+            - error_message: Optional[str]
             - class_probabilities: Dict[str, float]
             - recommendation: Dict[str, Any]
     """
-    # 1. Validate file
+    # 1. Validate file format and size
     is_valid, err_msg = validate_image_file(image_input)
     if not is_valid:
         raise ValueError(err_msg)
 
-    # 2. Preprocess
+    # Extract filename hint if available
+    file_name = None
+    if isinstance(image_input, (str, Path)):
+        file_name = Path(image_input).name
+    elif hasattr(image_input, "name"):
+        file_name = getattr(image_input, "name", "")
+
+    # 2. Visual & Structural Verification (Detect screenshots, UI, blanks, non-waste)
+    is_waste_item, status_code, verification_msg = verify_waste_image(image_input, file_name=file_name)
+    if not is_waste_item:
+        rec = get_recommendation("Cannot Identify Item")
+        return {
+            "is_waste": False,
+            "is_identified": False,
+            "predicted_category": "Cannot Identify Item",
+            "confidence_score": 0.0,
+            "confidence_percentage": 0.0,
+            "is_uncertain": True,
+            "status": status_code,
+            "error_message": f"Cannot identify the item: {verification_msg}",
+            "class_probabilities": {c: 0.0 for c in TARGET_CLASSES},
+            "recommendation": rec
+        }
+
+    # 3. Preprocess for CNN
     try:
         tensor = prepare_for_inference(image_input)
     except PreprocessingError as pe:
         raise ValueError(f"Image preprocessing failed: {pe}") from pe
 
-    # 3. Model inference
+    # 4. Model inference
     model = get_loaded_model()
     class_map = get_class_mapping()
 
@@ -105,14 +134,37 @@ def predict_waste(image_input: Union[str, Path, Image.Image, object]) -> Dict[st
     # Check uncertainty against configurable threshold
     is_uncertain = confidence_score < CONFIDENCE_THRESHOLD
 
-    # 4. Fetch deterministic recommendation
+    if is_uncertain:
+        rec = get_recommendation("Cannot Identify Item")
+        return {
+            "is_waste": True,
+            "is_identified": False,
+            "predicted_category": "Cannot Identify Item",
+            "confidence_score": round(confidence_score, 4),
+            "confidence_percentage": round(confidence_score * 100.0, 2),
+            "is_uncertain": True,
+            "status": "low_confidence",
+            "error_message": (
+                f"Cannot identify the item: The model returned a low confidence score ({confidence_score * 100.0:.1f}%), "
+                f"which is below the {int(CONFIDENCE_THRESHOLD * 100)}% certainty threshold. "
+                "Please upload a clearer, well-lit photo of the physical waste item."
+            ),
+            "class_probabilities": class_probabilities,
+            "recommendation": rec
+        }
+
+    # 5. Confident physical waste identification
     rec = get_recommendation(predicted_category)
 
     return {
+        "is_waste": True,
+        "is_identified": True,
         "predicted_category": predicted_category,
         "confidence_score": round(confidence_score, 4),
         "confidence_percentage": round(confidence_score * 100.0, 2),
-        "is_uncertain": is_uncertain,
+        "is_uncertain": False,
+        "status": "success",
+        "error_message": None,
         "class_probabilities": class_probabilities,
         "recommendation": rec
     }
